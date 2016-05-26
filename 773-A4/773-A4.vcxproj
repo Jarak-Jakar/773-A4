@@ -88,7 +88,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Misc\James\Computer Science\CS 773\A4\773-A4\FreeImage\Dist\x64;C:\Misc\James\Computer Science\CS 773\A4\773-A4\FreeImage\Wrapper\FreeImagePlus\dist\x64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>H:\2016\Semester One\CS 773\A4\773-A4\FreeImage\Wrapper\FreeImagePlus\dist\x64;H:\2016\Semester One\CS 773\A4\773-A4\FreeImage\Dist\x64;C:\Misc\James\Computer Science\CS 773\A4\773-A4\FreeImage\Dist\x64;C:\Misc\James\Computer Science\CS 773\A4\773-A4\FreeImage\Wrapper\FreeImagePlus\dist\x64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
