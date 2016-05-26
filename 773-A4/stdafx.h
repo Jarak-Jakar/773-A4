@@ -9,6 +9,8 @@
 
 #include <stdio.h>
 #include <tchar.h>
+#include "FreeImagePlus.h"
+#include <vector>
 
 
 
