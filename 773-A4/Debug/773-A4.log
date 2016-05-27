@@ -1,0 +1,11 @@
+﻿773-A4.obj : error LNK2019: unresolved external symbol __imp__FreeImage_GetScanLine@8 referenced in function _main
+773-A4.obj : error LNK2019: unresolved external symbol __imp__FreeImage_GetWidth@4 referenced in function _main
+773-A4.obj : error LNK2019: unresolved external symbol __imp__FreeImage_GetHeight@4 referenced in function _main
+773-A4.obj : error LNK2019: unresolved external symbol __imp__FreeImage_GetLine@4 referenced in function _main
+773-A4.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: __thiscall fipImage::fipImage(enum FREE_IMAGE_TYPE,unsigned int,unsigned int,unsigned int)" (__imp_??0fipImage@@QAE@W4FREE_IMAGE_TYPE@@III@Z) referenced in function _main
+773-A4.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: virtual __thiscall fipImage::~fipImage(void)" (__imp_??1fipImage@@UAE@XZ) referenced in function _main
+773-A4.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: int __thiscall fipImage::load(char const *,int)" (__imp_?load@fipImage@@QAEHPBDH@Z) referenced in function _main
+773-A4.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: __thiscall fipImage::operator struct FIBITMAP *(void)" (__imp_??BfipImage@@QAEPAUFIBITMAP@@XZ) referenced in function _main
+H:\2016\Semester One\CS 773\A4\773-A4\FreeImage\Dist\x64\FreeImage.lib : warning LNK4272: library machine type 'x64' conflicts with target machine type 'X86'
+H:\2016\Semester One\CS 773\A4\773-A4\FreeImage\Wrapper\FreeImagePlus\dist\x64\FreeImagePlus.lib : warning LNK4272: library machine type 'x64' conflicts with target machine type 'X86'
+H:\2016\Semester One\CS 773\A4\773-A4\Debug\773-A4.exe : fatal error LNK1120: 8 unresolved externals

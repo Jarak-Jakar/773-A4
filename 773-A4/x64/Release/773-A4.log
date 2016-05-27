@@ -1,7 +1,7 @@
-﻿  773-A4.cpp
+﻿  stdafx.cpp
+  773-A4.cpp
+773-A4.cpp(98): warning C4018: '<': signed/unsigned mismatch
   Generating code
-  2 of 312 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+  All 312 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
-  773-A4.vcxproj -> H:\2016\Semester One\CS 773\A2\773-A2\x64\Release\773-A4.exe
+  773-A4.vcxproj -> H:\2016\Semester One\CS 773\A4\773-A4\x64\Release\773-A4.exe
