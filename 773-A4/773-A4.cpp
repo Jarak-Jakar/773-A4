@@ -184,6 +184,8 @@ int main(int argc, char *argv[])
 		}
  	}
 
+	// Another change!
+
 	// Now that the window average array has been built, can get rid of individual intensities array
 	rightPicInt.~vector();
 
