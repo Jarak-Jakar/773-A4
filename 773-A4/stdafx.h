@@ -11,6 +11,7 @@
 #include <tchar.h>
 #include "FreeImagePlus.h"
 #include <vector>
+#include <math.h>
 
 
 
