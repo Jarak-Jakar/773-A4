@@ -9,9 +9,11 @@
 
 #include <stdio.h>
 #include <tchar.h>
-#include "FreeImagePlus.h"
 #include <vector>
-
+#include <iostream>
+#include <fstream>
+#include "FreeImagePlus.h"
+#include <armadillo>
 
 
 // TODO: reference additional headers your program requires here
