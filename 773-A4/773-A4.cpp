@@ -110,6 +110,8 @@ int main(int argc, char *argv[])
 	// Now create intensity values for the border pixels - done separately to avoid a lot of unnecessary if statements, though it does bloat the code an awful lot
 	// Pixels outside the image are assigned an intensity of 127 to be totally average
 
+	// TO BE FINISHED
+
 	// Go up the left side
 	for (unsigned y = 0; y < imageHeight; y++)
 	{
@@ -367,6 +369,7 @@ int main(int argc, char *argv[])
 		{
 			double lowestCorrelationScore = 65076.1; // Set so high that the first comparison will always come out to be lower
 			for (unsigned z = x; (z < imageWidth) && (z < (x + (imageWidth / 2))); z++)
+			//for (unsigned z = x; (z < imageWidth) && (z < (x + (64))); z++)
 			{
 				correlationScore = pow((leftPicWin[x][y] - rightPicWin[z][y]), 2.0);
 				if (correlationScore < lowestCorrelationScore)
