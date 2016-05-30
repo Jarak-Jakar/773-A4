@@ -11,3 +11,11 @@
 /FreeImage3170Win32Win64.zip
 /x64
 /ipch
+/lapack_win64_MT.lib
+/lapack_win64_MT.dll
+/blas_win64_MT.lib
+/blas_win64_MT.dll
+/lapack_win64_MT.lib
+/lapack_win64_MT.dll
+/blas_win64_MT.lib
+/blas_win64_MT.dll
