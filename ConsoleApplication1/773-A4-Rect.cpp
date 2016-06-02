@@ -157,13 +157,25 @@ int main(int argc, char *argv[])
 
 	// Undistort the images
 
-	fipImage leftUndistortImage(leftPic);
-	//fipImage leftUndistortImage(FIT_BITMAP, imageWidth, imageHeight, 24);
+	//fipImage leftUndistortImage(leftPic);
+	fipImage leftUndistortImage(FIT_BITMAP, imageWidth, imageHeight, 24);
 	fipImage rightUndistortImage(rightPic);
 	//fipImage rightUndistortImage(FIT_BITMAP, imageWidth, imageHeight, 24);
 
 	// xu = xd * (1 + (K * p2))
 	// yu = yd * (1 + (K * p2))
+
+	for (size_t x = 0; x < imageWidth; x++)
+	{
+		for (size_t y = 0; y < imageHeight; y++)
+		{
+			int rhosq = pow(x, 2) + pow(y, 2);
+			int xu = (int)round(x * (1 + (KappaLeft * rhosq)));
+			int yu = (int)round(y * (1 + (KappaLeft * rhosq)));
+
+			//leftUndistortImage
+		}
+	}
 
 	leftUndistortImage.save(argv[4]);
 

@@ -67,12 +67,15 @@ int main(int argc, char *argv[])
 
 	double intensitySum = 0.0;
 	int windowSize = 8;
+	int windowSizeSq = windowSize * windowSize;
+	int iwlessws = imageWidth - windowSize;
+	int ihlessws = imageHeight - windowSize;
 
 	// Create intensity values for all pixels that are not on the border or next to the border - done this way to avoid a lot of unnecessary if statements
-	for (unsigned x = windowSize; x < (imageWidth - windowSize); x++) {
+	for (unsigned x = windowSize; x < iwlessws; x++) {
 		//BYTE *bits = FreeImage_GetScanLine(rightPicOrig, y);
 
-		for (unsigned y = windowSize; y < (imageHeight - windowSize); y++)
+		for (unsigned y = windowSize; y < ihlessws; y++)
 		{
 			intensitySum = 0.0;
 
@@ -112,7 +115,7 @@ int main(int argc, char *argv[])
 
 
 
-			rightPicWin[x][y] = intensitySum / (windowSize * windowSize);
+			rightPicWin[x][y] = intensitySum / windowSizeSq;
 
 
 
@@ -226,10 +229,10 @@ int main(int argc, char *argv[])
 	intensitySum = 0.0;
 
 	// Create intensity values for all pixels that are not on the border or next to the border - done this way to avoid a lot of unnecessary if statements
-	for (unsigned x = windowSize; x < (imageWidth - windowSize); x++) {
+	for (unsigned x = windowSize; x < iwlessws; x++) {
 		//BYTE *bits = FreeImage_GetScanLine(rightPicOrig, y);
 
-		for (unsigned y = windowSize; y < (imageHeight - windowSize); y++)
+		for (unsigned y = windowSize; y < ihlessws; y++)
 		{
 			intensitySum = 0.0;
 
@@ -267,7 +270,7 @@ int main(int argc, char *argv[])
 				}
 			}
 
-			leftPicWin[x][y] = intensitySum / (windowSize * windowSize);
+			leftPicWin[x][y] = intensitySum / windowSizeSq;
 
 			//bits += bytespp;
 		}
@@ -382,6 +385,7 @@ int main(int argc, char *argv[])
 	double correlationScore = 0.0;  // Correlation scores will be calculated as the square of the intensity difference between pixels
 	int minDisparity = 6000;
 	int maxDisparity = 0;
+	int halfImageWidth = imageWidth / 2;
 
 	/*for (unsigned x = windowSize; x < (imageWidth - windowSize); x++)
 	{
@@ -404,16 +408,21 @@ int main(int argc, char *argv[])
 		}
 	}*/
 
-	for (int x = (imageWidth - windowSize); x > windowSize; --x)
+	for (int x = iwlessws; x > windowSize; --x)
 	{
 
-		for (int y = (imageHeight - windowSize); y > windowSize; --y)
+		for (int y = ihlessws; y > windowSize; --y)
 		{
 			double lowestCorrelationScore = 65076.1; // Set so high that the first comparison will always come out to be lower
 			//for (unsigned z = x; (z >= 0) && (z > (x - (imageWidth / 2))); --z)
-			for (unsigned z = x; z > 0; --z)
+			//for (unsigned z = max(x, halfImageWidth); z > 0; --z)
+			for (int z = x; z > 0; --z)
 				//for (unsigned z = x; (z < imageWidth) && (z < (x + (64))); z++)
 			{
+				if (z < (x - halfImageWidth))
+				{
+					break;
+				}
 				correlationScore = pow((leftPicWin[x][y] - rightPicWin[z][y]), 2.0);
 				if (correlationScore < lowestCorrelationScore)
 				{
@@ -431,6 +440,9 @@ int main(int argc, char *argv[])
 	fipImage disparityImage(leftPicOrig.getImageType(), imageWidth, imageHeight, 8); // Should make a greyscale image with the same file type and size as the left pic
 	//double disparityMultiplier = (maxDisparity - minDisparity) / 255.0;
 	double disparityMultiplier = 255.0 / (maxDisparity - minDisparity);
+
+	cout << "Max Disparity = " << maxDisparity << endl;
+	cout << "Min Disparity = " << minDisparity << endl;
 
 	//minDisparity = 73;
 
