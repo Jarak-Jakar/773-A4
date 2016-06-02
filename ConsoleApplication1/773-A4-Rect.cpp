@@ -1,4 +1,5 @@
 // ConsoleApplication1.cpp : Defines the entry point for the console application.
+// Note that this is a naive implemenation, without any performance optimisations
 //
 
 #include "stdafx.h"
@@ -6,7 +7,7 @@
 using namespace std;
 using namespace arma;
 
-Col<double> extractColour(fipImage pic, unsigned x, unsigned y) {
+Col<double> extractColour(fipImage const &pic, unsigned x, unsigned y) {
 	BYTE red, green, blue;
 	RGBQUAD Colour;
 	Col<double> returnColour(3);
@@ -22,11 +23,12 @@ Col<double> extractColour(fipImage pic, unsigned x, unsigned y) {
 		returnColour(1) = 0.0;
 		returnColour(2) = 0.0;
 	}
+
 	return returnColour;
 }
 
 // Based off the code supplied by Trevor Gee, in 'Rectification', CS 773 Course handout
-void bilinearInterpolate(fipImage pic, Col<double> currentCoord, BYTE *Colours) {
+void bilinearInterpolate(fipImage const &pic, Col<double> currentCoord, BYTE *Colours) {
 	Col<double> colour1(3), colour2(3), colour3(3), colour4(3);
 
 	unsigned x1 = (unsigned)floor(currentCoord(0));
@@ -155,15 +157,17 @@ int main(int argc, char *argv[])
 
 	// Undistort the images
 
-	//fipImage leftUndistortImage(leftPic);
-	fipImage leftUndistortImage(FIT_BITMAP, imageWidth, imageHeight, 24);
-	//fipImage rightUndistortImage(rightPic);
-	fipImage rightUndistortImage(FIT_BITMAP, imageWidth, imageHeight, 24);
+	fipImage leftUndistortImage(leftPic);
+	//fipImage leftUndistortImage(FIT_BITMAP, imageWidth, imageHeight, 24);
+	fipImage rightUndistortImage(rightPic);
+	//fipImage rightUndistortImage(FIT_BITMAP, imageWidth, imageHeight, 24);
 
 	// xu = xd * (1 + (K * p2))
 	// yu = yd * (1 + (K * p2))
 
+	leftUndistortImage.save(argv[4]);
 
+	rightUndistortImage.save(argv[5]);
 
 	cout << "Finished undistorting the images!" << endl;
 
@@ -173,14 +177,15 @@ int main(int argc, char *argv[])
 
 	Mat<double> leftProjectionMatrix = leftCameraMatrix * leftRotationTranslationMatrix;
 	Mat<double> rightProjectionMatrix = rightCameraMatrix * rightRotationTranslationMatrix;
-	Col<double> leftOpticalCentre = (leftProjectionMatrix.cols(0, 2)).i() * leftProjectionMatrix.col(3);
-	Col<double> rightOpticalCentre = (rightProjectionMatrix.cols(0, 2)).i() * rightProjectionMatrix.col(3);
+	Col<double> leftOpticalCentre = -1.0 * ((leftProjectionMatrix.cols(0, 2)).i()) * leftProjectionMatrix.col(3);
+	Col<double> rightOpticalCentre = -1.0 * ((rightProjectionMatrix.cols(0, 2)).i()) * rightProjectionMatrix.col(3);
 
 	Col<double> v1 = leftOpticalCentre - rightOpticalCentre;
-	//Mat<double> leftRotationMatrix = leftRotationTranslationMatrix.head_cols(3);
-	//Row<double> R3 = leftRotationMatrix.row(2);
-	//Col<double> R3T = R3.t();
-	Col<double> v2 = cross((((leftRotationTranslationMatrix.head_cols(3)).row(2)).t()), v1);
+	Mat<double> leftRotationMatrix = leftRotationTranslationMatrix.head_cols(3);
+	Row<double> R3 = leftRotationMatrix.row(2);
+	Col<double> R3T = R3.t();
+	//Col<double> v2 = cross((((leftRotationTranslationMatrix.head_cols(3)).row(2)).t()), v1);
+	Col<double> v2 = cross(R3T, v1);
 	Col<double> v3 = cross(v1, v2);
 
 	Col<double> v4 = normalise(v1);
@@ -195,12 +200,16 @@ int main(int argc, char *argv[])
 	leftRect.insert_rows(1, v5.t());
 	leftRect.insert_rows(2, v6.t());
 
+	/*Mat<double> leftRect = v4;
+	leftRect.insert_cols(1, v5);
+	leftRect.insert_cols(2, v6);*/
+
 	cout << "Finished building leftRect" << endl;
 
 	Mat<double> cameraRect = (leftCameraMatrix + rightCameraMatrix) / 2.0;
 	Mat<double> rightRect = mat(leftRect);
-	leftRect.insert_cols(3, ((leftRect * -1) * leftOpticalCentre));
-	rightRect.insert_cols(3, ((rightRect * -1) * rightOpticalCentre));
+	leftRect.insert_cols(3, ((leftRect * -1.0) * leftOpticalCentre));
+	rightRect.insert_cols(3, ((rightRect * -1.0) * rightOpticalCentre));
 
 	cout << "Finished building rightRect" << endl;
 
@@ -221,10 +230,11 @@ int main(int argc, char *argv[])
 
 	// Destruct the now unnecessary objects, and hopefully clear up some memory space
 
+	leftPic.~fipImage();
+	rightPic.~fipImage();
 	v4.~Col();
 	v5.~Col();
 	v6.~Col();
-
 	leftCameraMatrix.~Mat();
 	rightCameraMatrix.~Mat();
 	leftRotationTranslationMatrix.~Mat();
@@ -244,28 +254,47 @@ int main(int argc, char *argv[])
 	fipImage leftRectifyImage(leftUndistortImage);
 	fipImage rightRectifyImage(rightUndistortImage);
 
+	//leftUndistortImage.~fipImage();
+	//rightUndistortImage.~fipImage();
+
 	//int bytesppu = FreeImage_GetLine(leftUndistortImage) / imageWidth;
 	int bytesppr = FreeImage_GetLine(leftRectifyImage) / imageWidth;
+	BYTE *bitsr;
+	BYTE Colours[3];
 
 	Col<double> currentCoordinateU(3);
 	Col<double> currentCoordinateR(3);
 
 	for (unsigned y = 0; y < imageHeight; y++) {
 		//BYTE *bitsu = FreeImage_GetScanLine(leftUndistortImage, y);
-		BYTE *bitsr = FreeImage_GetScanLine(leftRectifyImage, y);
+
+		/*cout << "Started a new y line" << endl;
+
+		if ((y % 100) == 0)
+		{
+			cout << "Finished 100 lines of rectification, left image!" << endl;
+		}*/
+
+		bitsr = FreeImage_GetScanLine(leftRectifyImage, y);
 
 		for (unsigned x = 0; x < imageWidth; x++)
 		{
 			//rightPicInt[x][y] = (0.3 * bits[FI_RGBA_RED]) + (0.6 * bits[FI_RGBA_GREEN]) + (0.1 * bits[FI_RGBA_BLUE]);
+
+			//cout << "Started a new x coordinate" << endl;
 
 			currentCoordinateR(0) = x;
 			currentCoordinateR(1) = y;
 			currentCoordinateR(2) = 1;
 			currentCoordinateU = invHomographyLeft * currentCoordinateR;
 
-			BYTE Colours[3];
+			//BYTE Colours[3];
 
 			bilinearInterpolate(leftUndistortImage, currentCoordinateU, Colours);
+
+			/*Colours[0] = 127;
+			Colours[1] = 127;
+			Colours[2] = 127;*/
 
 			bitsr[FI_RGBA_RED] = Colours[0];
 			bitsr[FI_RGBA_GREEN] = Colours[1];
@@ -279,12 +308,19 @@ int main(int argc, char *argv[])
 	leftRectifyImage.save(argv[6]);
 
 	cout << "Finished creating the left rectified image!" << endl;
+	leftUndistortImage.~fipImage();
+	leftRectifyImage.~fipImage();
 
 	bytesppr = FreeImage_GetLine(rightRectifyImage) / imageWidth;
 
 	for (unsigned y = 0; y < imageHeight; y++) {
 		//BYTE *bitsu = FreeImage_GetScanLine(leftUndistortImage, y);
-		BYTE *bitsr = FreeImage_GetScanLine(rightRectifyImage, y);
+		bitsr = FreeImage_GetScanLine(rightRectifyImage, y);
+
+		/*if ((y % 100) == 0)
+		{
+			cout << "Finished 100 lines of rectification, right image!" << endl;
+		}*/
 
 		for (unsigned x = 0; x < imageWidth; x++)
 		{
@@ -295,9 +331,9 @@ int main(int argc, char *argv[])
 			currentCoordinateR(2) = 1;
 			currentCoordinateU = invHomographyRight * currentCoordinateR;
 
-			BYTE Colours[3];
+			//BYTE Colours[3];
 
-			bilinearInterpolate(leftUndistortImage, currentCoordinateU, Colours);
+			bilinearInterpolate(rightUndistortImage, currentCoordinateU, Colours);
 
 			bitsr[FI_RGBA_RED] = Colours[0];
 			bitsr[FI_RGBA_GREEN] = Colours[1];

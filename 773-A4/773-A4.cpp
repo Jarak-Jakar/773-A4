@@ -66,16 +66,25 @@ int main(int argc, char *argv[])
 	rightPicWin.resize(imageWidth, vector<double>(imageHeight, 0));
 
 	double intensitySum = 0.0;
+	int windowSize = 8;
 
 	// Create intensity values for all pixels that are not on the border or next to the border - done this way to avoid a lot of unnecessary if statements
-	for (unsigned x = 2; x < (imageWidth - 2); x++) {
+	for (unsigned x = windowSize; x < (imageWidth - windowSize); x++) {
 		//BYTE *bits = FreeImage_GetScanLine(rightPicOrig, y);
 
-		for (unsigned y = 2; y < (imageHeight - 2); y++)
+		for (unsigned y = windowSize; y < (imageHeight - windowSize); y++)
 		{
 			intensitySum = 0.0;
 
-			intensitySum += rightPicInt[x - 2][y - 2];
+			for (int z = -(windowSize - 1); z < windowSize; z++)
+			{
+				for (int a = -(windowSize - 1); a < windowSize; a++)
+				{
+					intensitySum += rightPicInt[x + z][y + a];
+				}
+			}
+
+			/*intensitySum += rightPicInt[x - 2][y - 2];
 			intensitySum += rightPicInt[x - 2][y - 1];
 			intensitySum += rightPicInt[x - 2][y];
 			intensitySum += rightPicInt[x - 2][y + 1];
@@ -99,9 +108,13 @@ int main(int argc, char *argv[])
 			intensitySum += rightPicInt[x + 2][y - 1];
 			intensitySum += rightPicInt[x + 2][y];
 			intensitySum += rightPicInt[x + 2][y + 1];
-			intensitySum += rightPicInt[x + 2][y + 2];
+			intensitySum += rightPicInt[x + 2][y + 2];*/
 
-			rightPicWin[x][y] = intensitySum / 25.0;
+
+
+			rightPicWin[x][y] = intensitySum / (windowSize * windowSize);
+
+
 
 			//bits += bytespp;
 		}
@@ -112,7 +125,7 @@ int main(int argc, char *argv[])
 
 	// TO BE FINISHED
 
-	// Go up the left side
+	/*// Go up the left side
 	for (unsigned y = 0; y < imageHeight; y++)
 	{
 		// Do x = 0 line
@@ -204,7 +217,7 @@ int main(int argc, char *argv[])
 			rightPicWin[0][y] = intensitySum / 25.0;
 			//bits += bytespp;
 		}
-	}
+	}*/
 
 	// Now that the intensity for each pixel has been computed, build an array of the 5x5 window average intensity
 	vector<vector<double>> leftPicWin;
@@ -213,14 +226,14 @@ int main(int argc, char *argv[])
 	intensitySum = 0.0;
 
 	// Create intensity values for all pixels that are not on the border or next to the border - done this way to avoid a lot of unnecessary if statements
-	for (unsigned x = 2; x < (imageWidth - 2); x++) {
+	for (unsigned x = windowSize; x < (imageWidth - windowSize); x++) {
 		//BYTE *bits = FreeImage_GetScanLine(rightPicOrig, y);
 
-		for (unsigned y = 2; y < (imageHeight - 2); y++)
+		for (unsigned y = windowSize; y < (imageHeight - windowSize); y++)
 		{
 			intensitySum = 0.0;
 
-			intensitySum += leftPicInt[x - 2][y - 2];
+			/*intensitySum += leftPicInt[x - 2][y - 2];
 			intensitySum += leftPicInt[x - 2][y - 1];
 			intensitySum += leftPicInt[x - 2][y];
 			intensitySum += leftPicInt[x - 2][y + 1];
@@ -244,9 +257,17 @@ int main(int argc, char *argv[])
 			intensitySum += leftPicInt[x + 2][y - 1];
 			intensitySum += leftPicInt[x + 2][y];
 			intensitySum += leftPicInt[x + 2][y + 1];
-			intensitySum += leftPicInt[x + 2][y + 2];
+			intensitySum += leftPicInt[x + 2][y + 2];*/
 
-			leftPicWin[x][y] = intensitySum / 25.0;
+			for (int z = -(windowSize - 1); z < windowSize; z++)
+			{
+				for (int a = -(windowSize - 1); a < windowSize; a++)
+				{
+					intensitySum += leftPicInt[x + z][y + a];
+				}
+			}
+
+			leftPicWin[x][y] = intensitySum / (windowSize * windowSize);
 
 			//bits += bytespp;
 		}
@@ -256,7 +277,7 @@ int main(int argc, char *argv[])
 	// Pixels outside the image are assigned an intensity of 127 to be totally average
 
 	// Go up the left side
-	for (unsigned y = 0; y < imageHeight; y++)
+	/*for (unsigned y = 0; y < imageHeight; y++)
 	{
 		// Do x = 0 line
 
@@ -346,7 +367,7 @@ int main(int argc, char *argv[])
 			intensitySum += rightPicInt[2][y + 2];
 			rightPicWin[0][y] = intensitySum / 25.0;
 		}
- 	}
+ 	}*/
 
 	// Another change!
 
@@ -362,10 +383,10 @@ int main(int argc, char *argv[])
 	int minDisparity = 6000;
 	int maxDisparity = 0;
 
-	for (unsigned y = 2; y < (imageHeight - 2); y++)
+	/*for (unsigned x = windowSize; x < (imageWidth - windowSize); x++)
 	{
 		
-		for (unsigned x = 2; x < (imageWidth - 2); x++)
+		for (unsigned y = windowSize; y < (imageHeight - windowSize); y++)
 		{
 			double lowestCorrelationScore = 65076.1; // Set so high that the first comparison will always come out to be lower
 			for (unsigned z = x; (z < imageWidth) && (z < (x + (imageWidth / 2))); z++)
@@ -381,6 +402,28 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
+	}*/
+
+	for (int x = (imageWidth - windowSize); x > windowSize; --x)
+	{
+
+		for (int y = (imageHeight - windowSize); y > windowSize; --y)
+		{
+			double lowestCorrelationScore = 65076.1; // Set so high that the first comparison will always come out to be lower
+			//for (unsigned z = x; (z >= 0) && (z > (x - (imageWidth / 2))); --z)
+			for (unsigned z = x; z > 0; --z)
+				//for (unsigned z = x; (z < imageWidth) && (z < (x + (64))); z++)
+			{
+				correlationScore = pow((leftPicWin[x][y] - rightPicWin[z][y]), 2.0);
+				if (correlationScore < lowestCorrelationScore)
+				{
+					leftPicMatch[x][y] = x - z;
+					minDisparity = ((int)(x - z) < minDisparity) ? (x - z) : minDisparity;  // Check for new minDisparity
+					maxDisparity = ((int)(x - z) > maxDisparity) ? (x - z) : maxDisparity;  // Check for new maxDisparity
+					lowestCorrelationScore = correlationScore;
+				}
+			}
+		}
 	}
 
 	// Now that the pixel matches have been calculated, time to build the disparity map!
@@ -389,6 +432,8 @@ int main(int argc, char *argv[])
 	//double disparityMultiplier = (maxDisparity - minDisparity) / 255.0;
 	double disparityMultiplier = 255.0 / (maxDisparity - minDisparity);
 
+	//minDisparity = 73;
+
 	bytespp = FreeImage_GetLine(disparityImage) / imageWidth;
 
 	for (unsigned y = 0; y < imageHeight; y++) {
@@ -396,7 +441,7 @@ int main(int argc, char *argv[])
 
 		for (unsigned x = 0; x < imageWidth; x++)
 		{
-			*bits = (BYTE) round((leftPicMatch[x][y] - x) * disparityMultiplier);
+			*bits = (BYTE) round((leftPicMatch[x][y]) * disparityMultiplier);
 
 			bits += bytespp;
 		}
