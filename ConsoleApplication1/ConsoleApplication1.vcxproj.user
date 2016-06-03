@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LocalDebuggerCommandArguments>3D_L0189.JPG 3D_R0091.JPG CalibrationParameters.csv outputundistortimageleft.jpg outputundistortimageright.jpg outputrectifyimageleft.jpg outputrectifyimageright.jpg</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommandArguments>3D_L0189.JPG 3D_R0091.JPG CalibrationParameters.csv outputundistortimageleft.jpg outputundistortimageright.jpg outputrectifyimageleft.jpg outputrectifyimageright.jpg</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+</Project>
