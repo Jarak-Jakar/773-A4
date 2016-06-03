@@ -76,6 +76,7 @@ int main(int argc, char *argv[])
 	Mat<double> rightRotationTranslationMatrix(3, 4, fill::zeros);
 	double KappaLeft = 0.0;
 	double KappaRight = 0.0;
+	double pixelSize = 0.0;
 
 	// Read in calibration parameters
 	if (calibrationParamsFile.is_open()) {
@@ -119,6 +120,9 @@ int main(int argc, char *argv[])
 		line.erase(0, (line.find(",") + 1));
 		token = line.substr(0, line.find(","));
 		KappaRight = stod(token);
+		line.erase(0, (line.find(",") + 1));
+		token = line.substr(0, line.find(","));
+		pixelSize = stod(token);
 
 		// Do the right camera's stuff
 		for (int i = 0; i < 3; i++) {
@@ -157,23 +161,59 @@ int main(int argc, char *argv[])
 
 	// Undistort the images
 
-	//fipImage leftUndistortImage(leftPic);
-	fipImage leftUndistortImage(FIT_BITMAP, imageWidth, imageHeight, 24);
-	fipImage rightUndistortImage(rightPic);
-	//fipImage rightUndistortImage(FIT_BITMAP, imageWidth, imageHeight, 24);
+	fipImage leftUndistortImage(leftPic);
+	//fipImage leftUndistortImage(FIT_BITMAP, imageWidth, imageHeight, 24);
+	//fipImage rightUndistortImage(rightPic);
+	fipImage rightUndistortImage(FIT_BITMAP, imageWidth, imageHeight, 24);
+	Col<double> DistColours(3);
+	RGBQUAD PixelColour;
+	double rhosq = 0;
+	int xu = 0;
+	int yu = 0;
 
 	// xu = xd * (1 + (K * p2))
 	// yu = yd * (1 + (K * p2))
 
-	for (size_t x = 0; x < imageWidth; x++)
-	{
-		for (size_t y = 0; y < imageHeight; y++)
-		{
-			int rhosq = pow(x, 2) + pow(y, 2);
-			int xu = (int)round(x * (1 + (KappaLeft * rhosq)));
-			int yu = (int)round(y * (1 + (KappaLeft * rhosq)));
+	//cout << "KappaLeft = " << KappaLeft << endl;
 
-			//leftUndistortImage
+	for (unsigned x = 0; x < imageWidth; x++)
+	{
+		for (unsigned y = 0; y < imageHeight; y++)
+		{
+			rhosq = (int)round(pow(x, 2) + pow(y, 2));
+			xu = (int)round(x * (1 + (KappaLeft * rhosq)));
+			yu = (int)round(y * (1 + (KappaLeft * rhosq)));
+
+			//cout << "xu = " << xu << ", yu = " << yu << ", rhosq = " << rhosq << endl;
+
+			DistColours = extractColour(leftPic, x, y);
+			PixelColour.rgbRed = (BYTE)round(DistColours(0));
+			PixelColour.rgbGreen = (BYTE)round(DistColours(1));
+			PixelColour.rgbBlue = (BYTE)round(DistColours(2));
+
+			leftUndistortImage.setPixelColor(xu, yu, &PixelColour);
+		}
+	}
+
+	for (unsigned x = 0; x < imageWidth; x++)
+	{
+		for (unsigned y = 0; y < imageHeight; y++)
+		{
+			rhosq = pow((x * pixelSize), 2) + pow((y * pixelSize), 2);
+			//rhosq = pow((x), 2) + pow((y), 2);
+			xu = (int)round(x * (1 + (KappaRight * rhosq * pixelSize)));
+			yu = (int)round(y * (1 + (KappaRight * rhosq * pixelSize)));
+			//xu = (int)round(x * (1 + (KappaRight * rhosq)));
+			//yu = (int)round(y * (1 + (KappaRight * rhosq)));
+
+			//cout << "xu = " << xu << ", yu = " << yu << ", rhosq = " << rhosq << ", KappaRight = " << KappaRight << endl;
+
+			DistColours = extractColour(rightPic, x, y);
+			PixelColour.rgbRed = (BYTE)round(DistColours(0));
+			PixelColour.rgbGreen = (BYTE)round(DistColours(1));
+			PixelColour.rgbBlue = (BYTE)round(DistColours(2));
+
+			rightUndistortImage.setPixelColor(xu, yu, &PixelColour);
 		}
 	}
 
@@ -266,10 +306,6 @@ int main(int argc, char *argv[])
 	fipImage leftRectifyImage(leftUndistortImage);
 	fipImage rightRectifyImage(rightUndistortImage);
 
-	//leftUndistortImage.~fipImage();
-	//rightUndistortImage.~fipImage();
-
-	//int bytesppu = FreeImage_GetLine(leftUndistortImage) / imageWidth;
 	int bytesppr = FreeImage_GetLine(leftRectifyImage) / imageWidth;
 	BYTE *bitsr;
 	BYTE Colours[3];
@@ -278,41 +314,21 @@ int main(int argc, char *argv[])
 	Col<double> currentCoordinateR(3);
 
 	for (unsigned y = 0; y < imageHeight; y++) {
-		//BYTE *bitsu = FreeImage_GetScanLine(leftUndistortImage, y);
-
-		/*cout << "Started a new y line" << endl;
-
-		if ((y % 100) == 0)
-		{
-			cout << "Finished 100 lines of rectification, left image!" << endl;
-		}*/
-
 		bitsr = FreeImage_GetScanLine(leftRectifyImage, y);
 
 		for (unsigned x = 0; x < imageWidth; x++)
 		{
-			//rightPicInt[x][y] = (0.3 * bits[FI_RGBA_RED]) + (0.6 * bits[FI_RGBA_GREEN]) + (0.1 * bits[FI_RGBA_BLUE]);
-
-			//cout << "Started a new x coordinate" << endl;
-
 			currentCoordinateR(0) = x;
 			currentCoordinateR(1) = y;
 			currentCoordinateR(2) = 1;
 			currentCoordinateU = invHomographyLeft * currentCoordinateR;
 
-			//BYTE Colours[3];
-
 			bilinearInterpolate(leftUndistortImage, currentCoordinateU, Colours);
-
-			/*Colours[0] = 127;
-			Colours[1] = 127;
-			Colours[2] = 127;*/
 
 			bitsr[FI_RGBA_RED] = Colours[0];
 			bitsr[FI_RGBA_GREEN] = Colours[1];
 			bitsr[FI_RGBA_BLUE] = Colours[2];
 
-			//bitsu += bytesppu;
 			bitsr += bytesppr;
 		}
 	}
@@ -326,24 +342,15 @@ int main(int argc, char *argv[])
 	bytesppr = FreeImage_GetLine(rightRectifyImage) / imageWidth;
 
 	for (unsigned y = 0; y < imageHeight; y++) {
-		//BYTE *bitsu = FreeImage_GetScanLine(leftUndistortImage, y);
 		bitsr = FreeImage_GetScanLine(rightRectifyImage, y);
-
-		/*if ((y % 100) == 0)
-		{
-			cout << "Finished 100 lines of rectification, right image!" << endl;
-		}*/
 
 		for (unsigned x = 0; x < imageWidth; x++)
 		{
-			//rightPicInt[x][y] = (0.3 * bits[FI_RGBA_RED]) + (0.6 * bits[FI_RGBA_GREEN]) + (0.1 * bits[FI_RGBA_BLUE]);
 
 			currentCoordinateR(0) = x;
 			currentCoordinateR(1) = y;
 			currentCoordinateR(2) = 1;
 			currentCoordinateU = invHomographyRight * currentCoordinateR;
-
-			//BYTE Colours[3];
 
 			bilinearInterpolate(rightUndistortImage, currentCoordinateU, Colours);
 
@@ -351,7 +358,6 @@ int main(int argc, char *argv[])
 			bitsr[FI_RGBA_GREEN] = Colours[1];
 			bitsr[FI_RGBA_BLUE] = Colours[2];
 
-			//bitsu += bytesppu;
 			bitsr += bytesppr;
 		}
 	}
